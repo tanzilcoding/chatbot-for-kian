@@ -184,4 +184,4 @@ except Exception as e:
         error_message = e.message
     else:
         error_message = e
-    # st.error('ERROR MESSAGE: {}'.format(error_message))
+    st.error('ERROR MESSAGE: {}'.format(error_message))
