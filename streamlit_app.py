@@ -3,9 +3,6 @@ import pinecone
 import streamlit as st
 from streamlit_chat import message
 
-
-
-
 try:
     # initialize connection to pinecone (get API key at app.pinecone.io)
     pinecone.init(
@@ -167,5 +164,13 @@ try:
                     f"Model used: {st.session_state['model_name'][i]}; Number of tokens: {st.session_state['total_tokens'][i]}; Cost: ${st.session_state['cost'][i]:.5f}")
                 counter_placeholder.write(
                     f"Total cost of this conversation: ${st.session_state['total_cost']:.5f}")
-except:
+except Exception as e:
+    error_message = ''
     st.error('An error has occurred. Please try again.', icon="🚨")
+    # Just print(e) is cleaner and more likely what you want,
+    # but if you insist on printing message specifically whenever possible...
+    if hasattr(e, 'message'):
+        error_message = e.message
+    else:
+        error_message = e
+    print('ERROR MESSAGE: {}'.format(error_message))
