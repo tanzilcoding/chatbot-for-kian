@@ -3,13 +3,7 @@ import pinecone
 import streamlit as st
 from streamlit_chat import message
 
-# Set org ID and API key
-openai.organization = "org-8iWBFHBFb6BxwVhsTSzHxB52"
-openai.api_key = "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"
 
-# Initialize the Pinecone object
-pinecone_api_key = "4907cba7-f52a-4211-b521-e5b6ce57db17"
-pinecone_environment = "us-west1-gcp-free"
 
 
 try:
