@@ -9,6 +9,9 @@ try:
     pinecone_api_key = os.environ['pinecone_api_key']
     pinecone_environment = os.environ['pinecone_environment']
 
+    st.text(pinecone_api_key)
+    st.text(pinecone_environment)
+
     # initialize connection to pinecone (get API key at app.pinecone.io)
     pinecone.init(
         api_key=pinecone_api_key,
@@ -171,6 +174,7 @@ try:
                     f"Total cost of this conversation: ${st.session_state['total_cost']:.5f}")
 except Exception as e:
     error_message = ''
+    st.text('Hello World')
     st.error('An error has occurred. Please try again.', icon="🚨")
     # Just print(e) is cleaner and more likely what you want,
     # but if you insist on printing message specifically whenever possible...
@@ -178,4 +182,4 @@ except Exception as e:
         error_message = e.message
     else:
         error_message = e
-    print('ERROR MESSAGE: {}'.format(error_message))
+    st.error('ERROR MESSAGE: {}'.format(error_message))
