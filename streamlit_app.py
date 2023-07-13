@@ -165,6 +165,7 @@ try:
                 counter_placeholder.write(
                     f"Total cost of this conversation: ${st.session_state['total_cost']:.5f}")
 except Exception as e:
+    st.text('Hello World')
     error_message = ''
     st.error('An error has occurred. Please try again.', icon="🚨")
     # Just print(e) is cleaner and more likely what you want,
