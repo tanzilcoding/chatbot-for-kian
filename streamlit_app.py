@@ -1,9 +1,14 @@
+import os
 import openai
 import pinecone
 import streamlit as st
 from streamlit_chat import message
 
 try:
+    # Set environment variables
+    pinecone_api_key = os.environ['pinecone_api_key']
+    pinecone_environment = os.environ['pinecone_environment']
+
     # initialize connection to pinecone (get API key at app.pinecone.io)
     pinecone.init(
         api_key=pinecone_api_key,
@@ -165,7 +170,6 @@ try:
                 counter_placeholder.write(
                     f"Total cost of this conversation: ${st.session_state['total_cost']:.5f}")
 except Exception as e:
-    st.text('Hello World')
     error_message = ''
     st.error('An error has occurred. Please try again.', icon="🚨")
     # Just print(e) is cleaner and more likely what you want,
@@ -174,4 +178,4 @@ except Exception as e:
         error_message = e.message
     else:
         error_message = e
-    st.error('ERROR MESSAGE: {}'.format(error_message))
+    print('ERROR MESSAGE: {}'.format(error_message))
