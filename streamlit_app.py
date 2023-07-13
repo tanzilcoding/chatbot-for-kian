@@ -10,6 +10,8 @@ try:
     # Set environment variables
     pinecone_api_key = os.environ['pinecone_api_key']
     pinecone_environment = os.environ['pinecone_environment']
+    openai.organization = os.environ['openai_organization']
+    openai.api_key = os.environ['openai_api_key']
 
     # st.text(pinecone_api_key)
     # st.text(pinecone_environment)
