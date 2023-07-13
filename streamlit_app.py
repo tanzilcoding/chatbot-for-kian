@@ -5,6 +5,8 @@ import streamlit as st
 from streamlit_chat import message
 
 try:
+    st.set_page_config(page_title="CHILD ChatGPT", page_icon=":robot_face:")
+
     # Set environment variables
     pinecone_api_key = os.environ['pinecone_api_key']
     pinecone_environment = os.environ['pinecone_environment']
@@ -24,7 +26,7 @@ try:
     index = pinecone.GRPCIndex(index_name)
 
     # Setting page title and header
-    st.set_page_config(page_title="CHILD ChatGPT", page_icon=":robot_face:")
+    # st.set_page_config(page_title="CHILD ChatGPT", page_icon=":robot_face:")
     st.markdown("<h1 style='text-align: center;'>CHILD ChatGPT</h1>",
                 unsafe_allow_html=True)
 
