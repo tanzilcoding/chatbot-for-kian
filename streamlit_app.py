@@ -260,14 +260,16 @@ try:
 
                 sources = st.session_state['sources'][i]
 
-                # st.write(f"Sources: {st.session_state['sources'][i]}")
-                html_code, accordion_height = accordion(sources)
-                html_code = str(html_code)
+                sources = sources.strip()
+                if (len(sources)) >= 5:
+                    # st.write(f"Sources: {st.session_state['sources'][i]}")
+                    html_code, accordion_height = accordion(sources)
+                    html_code = str(html_code)
 
-                components.html(
-                    html_code,
-                    height=accordion_height,
-                )
+                    components.html(
+                        html_code,
+                        height=accordion_height,
+                    )
 
                 # st.write(
                 #     f"Model used: {st.session_state['model_name'][i]}; Number of tokens: {st.session_state['total_tokens'][i]}; Cost: ${st.session_state['cost'][i]:.5f}")
