@@ -18,11 +18,16 @@ element_id = 0
 def accordion(sources):
     html = ''
     global element_id
+    sources = sources.strip()
+    accordion_height = 0
     # 5 = 290
     # 4 = 240
     # 3 = 190
     # 2 = 140
     # 1 =  90
+
+    if (len(sources)) < 5:
+        return html, accordion_height
 
     html = html + '<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">'
     html = html + '<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>'
@@ -59,7 +64,8 @@ def accordion(sources):
             """
 
     # html = str(html)
-    accordion_height = 75 + 90 + (source_id - 1) * 50
+    # accordion_height = 75 + 90 + (source_id - 1) * 50
+    accordion_height = 150 + 90 + (source_id - 1) * 50
 
     return html, accordion_height
 
