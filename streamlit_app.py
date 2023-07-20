@@ -14,7 +14,6 @@ from langchain.schema import HumanMessage, SystemMessage, AIMessage
 
 element_id = 0
 
-
 def accordion(sources):
     html = ''
     global element_id
@@ -51,7 +50,7 @@ def accordion(sources):
         html = html + \
             f'<div id="collapse-{source_id}" class="accordion-collapse collapse" data-bs-parent="#myAccordion">'
         html = html + '<div class="card-body">'
-        html = html + f'<p><strong>{source}</strong> Space for summary</p>'
+        html = html + f'<p><strong><a href="http://www.cybermineral.com/pdf/{source}" target="_blank">{source}</a></strong> Space for summary</p>'
         html = html + '</div>'
         html = html + '</div>'
         html = html + '</div>'
