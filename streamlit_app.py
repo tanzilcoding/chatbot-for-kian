@@ -14,11 +14,59 @@ from langchain.schema import HumanMessage, SystemMessage, AIMessage
 
 element_id = 0
 
+def get_source_list(sources):
+  chunks = []
+  source_list = []
+  allowed_file_extensions = ['.pdf']
+
+  if '\n' in sources:
+    chunks = sources.split('\n')
+  elif ',' in sources:
+    chunks = sources.split(',')
+  else:
+    source = source_list.strip()
+    chunks.append(source)
+    #source_list.append(source)
+
+  for chunk in chunks:
+    chunk = chunk.strip()
+    if (len(chunk) >= 5):
+        first_two_chars = chunk[:2]
+        # print('first_two_chars: {}'.format(first_two_chars))
+        if first_two_chars == '- ':
+          chunk = chunk[2:]
+        extension = os.path.splitext(chunk)[1]
+        extension = extension.lower()
+        # print('extension: {}'.format(extension))
+
+        if extension in allowed_file_extensions:
+          # print('{} is in {}'.format(extension, allowed_file_extensions))
+          source_list.append(chunk)
+
+  return source_list
+
+def sanitize_answer(raw_answer):
+  answer = ''
+  chunks = raw_answer.split('\n')
+
+  for chunk in chunks:
+    temp_string = chunk.lower()
+    temp_string = temp_string.strip()
+
+    if temp_string.startswith('Source: '.lower()):
+      pass
+    else:
+      answer = answer + '\n' + chunk
+
+  answer = answer.strip()
+  return answer
 
 def accordion(sources):
     html = ''
     global element_id
     sources = sources.strip()
+    source_list = get_source_list(sources)
+    source_id = 0
     accordion_height = 0
     # 5 = 290
     # 4 = 240
@@ -33,18 +81,6 @@ def accordion(sources):
     html = html + '<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>'
     html = html + '<div class="m-4">'
     html = html + '<div class="accordion" id="myAccordion">'
-
-    source_id = 0
-
-    source_list = []
-    chunks = sources.split('\n')
-    for chunk in chunks:
-        item_list = chunk.split(',')
-        for item in item_list:
-            item = item.strip()
-
-            if (len(item) >= 5):
-                source_list.append(item)
 
     for source in source_list:
         source = source.strip()
@@ -221,7 +257,8 @@ try:
 
         result = qa_with_sources(query)
 
-        response = result['answer']
+        raw_answer = result['answer']
+        response = sanitize_answer(raw_answer)
         sources = result['sources']
 
         st.session_state['messages'].append(
