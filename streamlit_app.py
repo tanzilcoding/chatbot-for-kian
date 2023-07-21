@@ -14,6 +14,7 @@ from langchain.schema import HumanMessage, SystemMessage, AIMessage
 
 element_id = 0
 
+
 def accordion(sources):
     html = ''
     global element_id
@@ -35,7 +36,16 @@ def accordion(sources):
 
     source_id = 0
 
-    source_list = sources.split(',')
+    source_list = []
+    chunks = sources.split('\n')
+    for chunk in chunks:
+        item_list = chunk.split(',')
+        for item in item_list:
+            item = item.strip()
+
+            if (len(item) >= 5):
+                source_list.append(item)
+
     for source in source_list:
         source = source.strip()
         source_id = source_id + 1
@@ -50,7 +60,8 @@ def accordion(sources):
         html = html + \
             f'<div id="collapse-{source_id}" class="accordion-collapse collapse" data-bs-parent="#myAccordion">'
         html = html + '<div class="card-body">'
-        html = html + f'<p><strong><a href="http://www.cybermineral.com/pdf/{source}" target="_blank">{source}</a></strong> Space for summary</p>'
+        html = html + \
+            f'<p><strong><a href="http://www.cybermineral.com/pdf/{source}" target="_blank"><span style="overflow-wrap: break-word;">{source}</span></a></strong> Space for summary</p>'
         html = html + '</div>'
         html = html + '</div>'
         html = html + '</div>'
