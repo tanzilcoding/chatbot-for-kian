@@ -55,6 +55,11 @@ def sanitize_answer(raw_answer):
 
     if temp_string.startswith('Source: '.lower()):
       pass
+    elif '- Source:' in temp_string:
+      tokens = temp_string.split('- Source:')
+      chunk = tokens[0]
+      chunk = chunk.strip()
+      answer = answer + '\n' + chunk
     else:
       answer = answer + '\n' + chunk
 
@@ -234,7 +239,8 @@ try:
         # completion llm
         llm = ChatOpenAI(
             openai_api_key=OPENAI_API_KEY,
-            model_name='gpt-3.5-turbo',
+            # model_name='gpt-3.5-turbo',
+            model_name=model,
             temperature=0.0
         )
 
