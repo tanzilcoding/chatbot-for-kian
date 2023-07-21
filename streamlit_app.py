@@ -105,7 +105,8 @@ try:
         environment=pinecone_environment  # find next to API key in console
     )
 
-    index_name = "langchain-pdf"
+    # index_name = "langchain-pdf"
+    index_name = "langchain-ttsh"
     embed_model = "text-embedding-ada-002"
     # connect to index
     index = pinecone.GRPCIndex(index_name)
