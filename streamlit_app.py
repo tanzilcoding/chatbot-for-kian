@@ -119,23 +119,32 @@ try:
 
         docs_and_scores = vectorstore.similarity_search_with_score(query)
 
+        raw_problem_statement_list = []
         problem_statement_list = []
         for doc in docs_and_scores:
             # st.sidebar.text(doc.metadata['problem_statement'])
             year = list(doc)[0].metadata['year']
             requestor = list(doc)[0].metadata['requestor']
             problem_statement = list(doc)[0].metadata['problem_statement']
-            # st.text(problem_statement)
-            # st.sidebar.text(doc)
-            score = list(doc)[1]
-            score = float(score)
-            score = score * 100
-            # st.text(score)
+            raw_problem_statement = problem_statement.strip()
+            raw_problem_statement = raw_problem_statement.lower()
+            raw_problem_statement = raw_problem_statement.replace(" ", "")
+            raw_problem_statement = raw_problem_statement.replace("\n", "")
 
-            if score >= 80:
-                score = str(round(score, 2))
-                problem_statement_list.append(
-                    {"score": score, "problem_statement": problem_statement, "year": year, "requestor": requestor, })
+            if raw_problem_statement not in raw_problem_statement_list:
+                raw_problem_statement_list.append(raw_problem_statement)
+
+                # st.text(problem_statement)
+                # st.sidebar.text(doc)
+                score = list(doc)[1]
+                score = float(score)
+                score = score * 100
+                # st.text(score)
+
+                if score >= 80:
+                    score = str(round(score, 2))
+                    problem_statement_list.append(
+                        {"score": score, "problem_statement": problem_statement, "year": year, "requestor": requestor, })
 
         # completion llm
         llm = ChatOpenAI(
