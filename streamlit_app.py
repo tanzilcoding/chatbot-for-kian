@@ -119,8 +119,11 @@ try:
 
         docs_and_scores = vectorstore.similarity_search_with_score(query)
 
+        problem_statement_list = []
         for doc in docs_and_scores:
             # st.sidebar.text(doc.metadata['problem_statement'])
+            year = list(doc)[0].metadata['year']
+            requestor = list(doc)[0].metadata['requestor']
             problem_statement = list(doc)[0].metadata['problem_statement']
             # st.text(problem_statement)
             # st.sidebar.text(doc)
@@ -131,8 +134,8 @@ try:
 
             if score >= 80:
                 score = str(round(score, 2))
-                st.markdown(
-                    f"""<span style="word-wrap:break-word;"><strong>Problem Statement:</strong> {problem_statement}</span> <span style="font-style: italic;">(Relevance Score: {score}%)</span>""", unsafe_allow_html=True)
+                problem_statement_list.append(
+                    {"score": score, "problem_statement": problem_statement, "year": year, "requestor": requestor, })
 
         # completion llm
         llm = ChatOpenAI(
@@ -172,7 +175,7 @@ try:
         st.session_state['messages'].append(
             {"role": "assistant", "content": response})
 
-        return response
+        return response, problem_statement_list
 
     # container for chat history
     response_container = st.container()
@@ -185,18 +188,58 @@ try:
             submit_button = st.form_submit_button(label='Send')
 
         if submit_button and user_input:
-            output = generate_response(
+            output, problem_statement_list = generate_response(
                 user_input)
             st.session_state['past'].append(user_input)
             st.session_state['generated'].append(output)
             st.session_state['model_name'].append(model_name)
+            st.session_state['problem_statement_list'].append(
+                problem_statement_list)
 
     if st.session_state['generated']:
         with response_container:
             for i in range(len(st.session_state['generated'])):
                 message(st.session_state["past"][i],
                         is_user=True, key=str(i) + '_user')
-                message(st.session_state["generated"][i], key=str(i))
+
+                if len(st.session_state["problem_statement_list"][i]) < 1:
+                    st.markdown(
+                        f"""<span style="word-wrap:break-word;"><strong>Oops!</strong> No matching problem statement is found.</span>""", unsafe_allow_html=True)
+                elif len(st.session_state["problem_statement_list"][i]) == 1:
+                    for problem_statement_data in st.session_state["problem_statement_list"][i]:
+                        score = problem_statement_data["score"]
+                        year = problem_statement_data["year"]
+                        requestor = problem_statement_data["requestor"]
+                        requestor = requestor.strip()
+                        requestor = requestor.replace('\n', '<br>')
+                        problem_statement = problem_statement_data["problem_statement"]
+                        st.markdown(
+                            f"""<span style="word-wrap:break-word;"><strong>Problem Statement Found:</strong> {problem_statement}</span> <span style="word-wrap:break-word; font-style: italic;">(Relevance Score: {score}%)</span>""", unsafe_allow_html=True)
+                        st.markdown(
+                            f"""<span style="word-wrap:break-word;"><strong>Year:</strong> {year}""", unsafe_allow_html=True)
+                        st.markdown(
+                            f"""<span style="word-wrap:break-word;"><strong>Requestor/Dept/Institution:</strong><br>{requestor}""", unsafe_allow_html=True)
+                else:
+                    counter = 0
+                    for problem_statement_data in st.session_state["problem_statement_list"][i]:
+                        counter = counter + 1
+                        score = problem_statement_data["score"]
+                        year = problem_statement_data["year"]
+                        requestor = problem_statement_data["requestor"]
+                        requestor = requestor.strip()
+                        requestor = requestor.replace('\n', '<br>')
+                        problem_statement = problem_statement_data["problem_statement"]
+                        st.markdown(
+                            f"""<span style="word-wrap:break-word;"><strong>Problem Statement Found {counter}:</strong> {problem_statement}</span> <span style="word-wrap:break-word; font-style: italic;">(Relevance Score: {score}%)</span>""", unsafe_allow_html=True)
+                        st.markdown(
+                            f"""<span style="word-wrap:break-word;"><strong>Year:</strong> {year}""", unsafe_allow_html=True)
+                        st.markdown(
+                            f"""<span style="word-wrap:break-word;"><strong>Requestor/Dept/Institution:</strong><br>{requestor}""", unsafe_allow_html=True)
+
+                message(
+                    f'Summary: {st.session_state["generated"][i]}', key=str(i))
+
+
 except Exception as e:
     error_message = ''
     # st.text('Hello World')
