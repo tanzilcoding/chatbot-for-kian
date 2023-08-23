@@ -17,6 +17,7 @@ from tqdm.auto import tqdm
 from time import sleep
 import streamlit.components.v1 as components
 from streamlit_js_eval import streamlit_js_eval
+from streamlit.components.v1 import html
 
 try:
     import environment_variables
@@ -28,6 +29,11 @@ try:
     # Set org ID and API key
     # openai.organization = "<YOUR_OPENAI_ORG_ID>"
     # openai.organization = os.environ['openai_organization']
+
+    os.environ['openai_api_key'] = "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"
+    os.environ['pinecone_api_key'] = "4907cba7-f52a-4211-b521-e5b6ce57db17"
+    os.environ['pinecone_environment'] = "us-west1-gcp-free"
+    os.environ['index_name'] = "langchain"
     # =======================================================
     OPENAI_API_KEY = os.environ['openai_api_key']
     pinecone_api_key = os.environ['pinecone_api_key']
@@ -77,15 +83,11 @@ try:
         )
         return len(tokens)
 
-    def nav_to(url):
-        nav_script = """
-            <meta http-equiv="refresh" content="0; url='%s'">
-        """ % (url)
-        st.write(nav_script, unsafe_allow_html=True)
-
     page_title = "Problem Statement Uploader"
     st.set_page_config(page_title=page_title,)
     st.title(page_title)
+
+    st.markdown('<a href="https://psms-matchmaker.streamlit.app" target="_self">Search PS to Match Make</a>', unsafe_allow_html=True)
 
     with st.form("problem-statement-form"):
         st.text_input('Year:', today.year, key="year")
@@ -282,8 +284,7 @@ try:
                                         if upserted_count > 0:
                                             st.success(
                                                 f'Total upsert count: {upserted_count}')
-                                            st.info(
-                                                'This page will redirect you to the "Search PS to Match Make" pagein the next 5 (five) seconds.')
+                                            # st.info('This page will redirect you to the "Search PS to Match Make" pagein the next 5 (five) seconds.')
 
                                             if len(chunks) > 1:
                                                 st.success('{} text chunks are converted into vectors and uploaded to your Pinecone index: {}.'.format(
@@ -293,10 +294,13 @@ try:
                                                     len(chunks), index_name))
 
                                             # Reload the page
-                                            sleep(5)
+                                            # sleep(5)
+                                            # Simulate an HTTP redirect:
+                                            # streamlit_js_eval(js_expressions='window.location.replace("https://psms-matchmaker.streamlit.app");')
+                                            # streamlit_js_eval(js_expressions='window.location.href = "https://psms-matchmaker.streamlit.app"')
                                             # streamlit_js_eval(js_expressions="parent.window.location.reload()")
-                                            nav_to(
-                                                "https://psms-matchmaker.streamlit.app")
+                                            # nav_to("https://psms-matchmaker.streamlit.app")
+                                            st.markdown('<a href="https://psms-matchmaker.streamlit.app" target="_self">Search PS to Match Make</a>', unsafe_allow_html=True)
                                         else:
                                             st.error(
                                                 f'Oops! Upsert operation was unsuccessful. This means there was no data uploaded to the Pinecone.io vector index database. So, there was no change. Please try again.')
