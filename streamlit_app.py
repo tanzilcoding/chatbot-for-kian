@@ -87,7 +87,7 @@ try:
     st.set_page_config(page_title=page_title,)
     st.title(page_title)
 
-    st.markdown('<a href="https://psms-matchmaker.streamlit.app" target="_blank">Search PS to Match Make</a>', unsafe_allow_html=True)
+    st.markdown('<a href="https://psms-matchmaker.streamlit.app">Search PS to Match Make</a>', unsafe_allow_html=True)
 
     with st.form("problem-statement-form"):
         st.text_input('Year:', today.year, key="year")
