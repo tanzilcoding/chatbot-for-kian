@@ -30,10 +30,6 @@ try:
     # openai.organization = "<YOUR_OPENAI_ORG_ID>"
     # openai.organization = os.environ['openai_organization']
 
-    os.environ['openai_api_key'] = "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"
-    os.environ['pinecone_api_key'] = "4907cba7-f52a-4211-b521-e5b6ce57db17"
-    os.environ['pinecone_environment'] = "us-west1-gcp-free"
-    os.environ['index_name'] = "langchain"
     # =======================================================
     OPENAI_API_KEY = os.environ['openai_api_key']
     pinecone_api_key = os.environ['pinecone_api_key']
@@ -86,8 +82,6 @@ try:
     page_title = "Problem Statement Uploader"
     st.set_page_config(page_title=page_title,)
     st.title(page_title)
-
-    st.markdown('<a href="https://psms-matchmaker.streamlit.app">Search PS to Match Make</a>', unsafe_allow_html=True)
 
     with st.form("problem-statement-form"):
         st.text_input('Year:', today.year, key="year")
@@ -300,7 +294,7 @@ try:
                                             # streamlit_js_eval(js_expressions='window.location.href = "https://psms-matchmaker.streamlit.app"')
                                             # streamlit_js_eval(js_expressions="parent.window.location.reload()")
                                             # nav_to("https://psms-matchmaker.streamlit.app")
-                                            st.markdown('<a href="https://psms-matchmaker.streamlit.app" target="_self">Search PS to Match Make</a>', unsafe_allow_html=True)
+                                            st.markdown('<a href="https://psms-matchmaker.streamlit.app">Search PS to Match Make</a>', unsafe_allow_html=True)
                                         else:
                                             st.error(
                                                 f'Oops! Upsert operation was unsuccessful. This means there was no data uploaded to the Pinecone.io vector index database. So, there was no change. Please try again.')
