@@ -194,6 +194,7 @@ try:
                                 os.rename(save_path, destination_file)
                                 save_path = Path(
                                     save_folder, f'{file_name}.pdf')
+                                st.info(f'File save path: {save_path}')
                                 st.success(
                                     f'File {file_name}.pdf is successfully saved!')
                             else:
