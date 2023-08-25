@@ -18,25 +18,11 @@ from time import sleep
 import streamlit.components.v1 as components
 from streamlit_js_eval import streamlit_js_eval
 from streamlit.components.v1 import html
+import json
+import unicodedata
+from pathlib import Path
 
 try:
-    import environment_variables
-except ImportError:
-    pass
-
-try:
-    # Set environment variables
-    # Set org ID and API key
-    # openai.organization = "<YOUR_OPENAI_ORG_ID>"
-    # openai.organization = os.environ['openai_organization']
-
-    # =======================================================
-    OPENAI_API_KEY = os.environ['openai_api_key']
-    pinecone_api_key = os.environ['pinecone_api_key']
-    pinecone_environment = os.environ['pinecone_environment']
-    openai.api_key = OPENAI_API_KEY
-    index_name = os.environ['index_name']
-    # ==================================================== #
     today = datetime.date.today()
 
     def make_safe_filename(s):
@@ -67,6 +53,17 @@ try:
 
         return correct_file_name
 
+    def is_english(c):
+        return c.isalpha() and unicodedata.name(c).startswith(('LATIN', 'COMMON'))
+
+    def remove_non_english(lst):
+        output = []
+        for s in lst:
+            filtered = filter(is_english, list(s))
+            english_str = ''.join(filtered)
+            output.append(english_str)
+        return output
+
     tokenizer_name = tiktoken.encoding_for_model('gpt-4')
     # print(tokenizer_name.name)
     tokenizer = tiktoken.get_encoding(tokenizer_name.name)
@@ -83,6 +80,8 @@ try:
     st.set_page_config(page_title=page_title,)
     st.title(page_title)
 
+    st.image('./banner_psms.jpg')
+
     with st.form("problem-statement-form"):
         st.text_input('Year:', today.year, key="year")
         st.text_area('Background:', key='background',)
@@ -90,6 +89,7 @@ try:
         st.text_area('Desired Outcomes:', key='desired_outcomes',)
         st.text_area('Requestor/Dept/Institution:', key="requestor")
         st.text_area('Funding:', key="funding")
+        st.text_area('Contributor:', key="contributor")
         st.file_uploader(
             "Upload a PDF file for the problem statement:", type="pdf", key="uploaded_file")
 
@@ -103,6 +103,7 @@ try:
             desired_outcomes = st.session_state.desired_outcomes.strip()
             requestor = st.session_state.requestor.strip()
             funding = st.session_state.funding.strip()
+            contributor = st.session_state.contributor.strip()
 
             if year == "":
                 st.error("Please write a year and try again.")
@@ -127,6 +128,9 @@ try:
             elif funding == "":
                 st.error(
                     "Please write funding information and try again.")
+            elif contributor == "":
+                st.error(
+                    "Please write the contributor name and try again.")
             elif st.session_state.uploaded_file is None:
                 st.error(
                     "Please upload a PDF file for the problem statement and try again.")
@@ -154,161 +158,48 @@ try:
                             'I guarantee that the information is correct. Add to the database.')
 
                         if in_information_correct:
-                            pdf_reader = PdfReader(
-                                st.session_state.uploaded_file)
-                            text = ""
-                            docs = []
-                            for page in pdf_reader.pages:
-                                text = page.extract_text()
-                                doc = Document(page_content=text,
-                                               metadata={"source": st.session_state.uploaded_file.name})
-                                docs.append(doc)
+                            # Data to be written
+                            dictionary = {
+                                "year": year,
+                                "background": background,
+                                "problem_statement": problem_statement,
+                                "desired_outcomes": desired_outcomes,
+                                "requestor": requestor,
+                                "funding": funding,
+                                "contributor": contributor,
+                            }
 
-                            upserted_count = 0
+                            # Get the current working directory
+                            cwd = os.getcwd()
+                            save_folder = f'{cwd}/tmp'
 
-                            if len(docs) > 0:
-                                # st.sidebar.text(docs)
-                                # st.sidebar.text(docs[0])
-                                text_splitter = RecursiveCharacterTextSplitter(
-                                    chunk_size=500,
-                                    chunk_overlap=20,
-                                    length_function=tiktoken_len,
-                                    separators=["\n\n", "\n", " ", ""]
-                                )
+                            # Create a JSON file
+                            unique_id = uuid4().hex
+                            english_string_list = remove_non_english(
+                                [contributor.lower()])
+                            english_string = "".join(english_string_list)
+                            file_name = f"{english_string}-" + str(unique_id)
+                            with open(f"{cwd}/tmp/{file_name}.json", "w") as outfile:
+                                json.dump(dictionary, outfile)
 
-                                if len(tokenizer_name.name) > 0:
-                                    # st.info('{} is the name of your tokenizer.'.format(tokenizer_name.name))
-                                    chunks = []
-                                    for idx, page in enumerate(tqdm(docs)):
-                                        content = page.page_content
-                                        if len(content) > 100:
-                                            texts = text_splitter.split_text(
-                                                content)
-                                            num = random.random()
-                                            chunks.extend([{
-                                                'id': str(uuid4()),
-                                                'text': texts[i],
-                                                'chunk': i,
-                                                'source': st.session_state.uploaded_file.name,
-                                                'year': year,
-                                                'background': background,
-                                                'problem_statement': problem_statement,
-                                                'desired_outcomes': desired_outcomes,
-                                                'requestor': requestor,
-                                                'funding': funding,
-                                            } for i in range(len(texts))])
+                            # Save uploaded file to 'F:/tmp' folder.
+                            save_path = Path(
+                                save_folder, st.session_state.uploaded_file.name)
+                            with open(save_path, mode='wb') as w:
+                                w.write(
+                                    st.session_state.uploaded_file.getvalue())
 
-                                    if len(chunks) > 0:
-                                        if len(chunks) > 1:
-                                            st.info('{} text chunks are ready to be converted into vectors.'.format(
-                                                len(chunks)))
-                                        else:
-                                            st.info('{} text chunk is ready to be converted into vectors.'.format(
-                                                len(chunks)))
-
-                                        # initialize connection to pinecone (get API key at app.pinecone.io)
-                                        pinecone.init(
-                                            api_key=pinecone_api_key,
-                                            environment=pinecone_environment  # find next to API key in console
-                                        )
-                                        index = pinecone.Index(index_name)
-                                        sleep(5)
-
-                                        # stats = index.describe_index_stats()
-                                        # last_total_vector_count = stats['total_vector_count']
-                                        # last_total_vector_count = int(
-                                        #     last_total_vector_count)
-                                        # st.info(
-                                        #     f'Last total vector count: {last_total_vector_count}')
-
-                                        batch_size = 100  # how many embeddings we create and insert at once
-                                        embed_model = "text-embedding-ada-002"
-
-                                        for i in tqdm(range(0, len(chunks), batch_size)):
-                                            # find end of batch
-                                            i_end = min(
-                                                len(chunks), i+batch_size)
-                                            meta_batch = chunks[i:i_end]
-                                            # get ids
-                                            ids_batch = [x['id']
-                                                         for x in meta_batch]
-                                            # get texts to encode
-                                            texts = [x['text']
-                                                     for x in meta_batch]
-                                            # create embeddings (try-except added to avoid RateLimitError)
-                                            try:
-                                                res = openai.Embedding.create(
-                                                    input=texts, engine=embed_model)
-                                            except:
-                                                done = False
-                                                while not done:
-                                                    sleep(5)
-                                                    try:
-                                                        res = openai.Embedding.create(
-                                                            input=texts, engine=embed_model)
-                                                        done = True
-                                                    except:
-                                                        pass
-                                            embeds = [record['embedding']
-                                                      for record in res['data']]
-
-                                            # cleanup metadata
-                                            meta_batch = [{
-                                                'text': x['text'],
-                                                'chunk': x['chunk'],
-                                                'source': os.path.basename(x['source']),
-                                                'year': x['year'],
-                                                'background': x['background'],
-                                                'problem_statement': x['problem_statement'],
-                                                'desired_outcomes': x['desired_outcomes'],
-                                                'requestor': x['requestor'],
-                                                'funding': x['funding'],
-                                            } for x in meta_batch]
-                                            to_upsert = list(
-                                                zip(ids_batch, embeds, meta_batch))
-
-                                            # upsert to Pinecone
-                                            upsert_response = index.upsert(
-                                                vectors=to_upsert)
-                                            upserted_count = upserted_count + \
-                                                upsert_response['upserted_count']
-
-                                        # st.sidebar.text(stats)
-
-                                        if upserted_count > 0:
-                                            st.success(
-                                                f'Total upsert count: {upserted_count}')
-                                            # st.info('This page will redirect you to the "Search PS to Match Make" pagein the next 5 (five) seconds.')
-
-                                            if len(chunks) > 1:
-                                                st.success('{} text chunks are converted into vectors and uploaded to your Pinecone index: {}.'.format(
-                                                    len(chunks), index_name))
-                                            else:
-                                                st.success('{} text chunk is converted into vectors and uploaded to your Pinecone index: {}.'.format(
-                                                    len(chunks), index_name))
-
-                                            # Reload the page
-                                            # sleep(5)
-                                            # Simulate an HTTP redirect:
-                                            # streamlit_js_eval(js_expressions='window.location.replace("https://psms-matchmaker.streamlit.app");')
-                                            # streamlit_js_eval(js_expressions='window.location.href = "https://psms-matchmaker.streamlit.app"')
-                                            # streamlit_js_eval(js_expressions="parent.window.location.reload()")
-                                            # nav_to("https://psms-matchmaker.streamlit.app")
-                                            st.markdown('<a href="https://psms-matchmaker.streamlit.app">Search PS to Match Make</a>', unsafe_allow_html=True)
-                                        else:
-                                            st.error(
-                                                f'Oops! Upsert operation was unsuccessful. This means there was no data uploaded to the Pinecone.io vector index database. So, there was no change. Please try again.')
-
-                                        # st.session_state.problem_statement_text = ''
-                                    else:
-                                        print('Oops! No text chunk was created.')
-                                else:
-                                    print('Oops! No tokenizer could be created.')
+                            if save_path.exists():
+                                destination_file = f'{cwd}/tmp/{file_name}.pdf'
+                                os.rename(save_path, destination_file)
+                                save_path = Path(
+                                    save_folder, f'{file_name}.pdf')
+                                st.success(
+                                    f'File {file_name}.pdf is successfully saved!')
                             else:
-                                print(
-                                    'The script does not find any LangChain documents from your PDF files.')
-                                print(
-                                    'Did you really upload any valid input files?')
+                                st.error(
+                                    f'File save path: {save_path} does not exist.')
+
                 else:
                     st.error(
                         "Only PDF Files (.pdf extension) are accepted. Please try again.")
