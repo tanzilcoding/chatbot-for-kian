@@ -138,11 +138,11 @@ try:
                         else:
                             st.info(f'No document is found.')
 
-                        # response = index.delete(
-                        #     filter={
-                        #         "source": source,
-                        #     }
-                        # )
+                        response = index.delete(
+                            filter={
+                                "source": source,
+                            }
+                        )
 
                         st.success(
                             f'Vector data/content are deleted from the Pinecone.io "{database_name}"" vector index database.')
