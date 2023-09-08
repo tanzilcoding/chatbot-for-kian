@@ -29,7 +29,7 @@ try:
     container = st.container()
 
     with container:
-        st.title("Beware! You are deleting content from Pinecone.io")
+        st.title("TESTING... Beware! You are deleting content from Pinecone.io")
 
         with st.form("problem-statement-form"):
             database_name = st.selectbox('Select a database:', (
